@@ -63,7 +63,7 @@ def update_records():
             msg = msg.strip()
 
         if int(ts) <= int(lastts):
-            raise Exception("No new ones")
+            return
 
         conn.execute('insert into fml (fml_id, dt, msg) values(?, ?, ?)', [id, ts, msg])
         conn.commit()
@@ -74,7 +74,4 @@ if __name__ == "__main__":
 
     if len(sys.argv) > 1:
         if sys.argv[1] == 'cron':
-            try:
-                update_records()
-            except Exception:
-                print "No more updates"
+            update_records()
