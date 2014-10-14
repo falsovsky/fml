@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from bs4 import BeautifulSoup
-import urllib2, re, sqlite3, datetime, time, os, sys
+import urllib2, re, sqlite3, datetime, time, os, sys, hashlib
 import mylib
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
@@ -116,7 +116,7 @@ def get_magic_random(s):
     n = int(h, 16)
     myid = n % total
 
-    c = conn.execute('select id, datetime(data, "unixepoch") as data, numero, mensagem, origem from fml where id = ?;', [myid])
+    c = conn.execute('select id, fml_id, datetime(dt, "unixepoch"), msg from fml where id = ?;', [myid])
     rows = c.fetchall()[0]
     msg = "%s - #%s, %s" % (rows[3], rows[1], rows[2])
     return msg
