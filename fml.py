@@ -21,6 +21,11 @@ def get_latest_record_ts():
         data = zbr[0]
         return int(data)
 
+def get_random():
+    c = conn.execute('select fml_id, datetime(dt, "unixepoch") as data, msg from fml ORDER BY RANDOM() LIMIT 1;')
+    rows = c.fetchall()[0]
+    msg = "%s" % (rows[2])
+    return msg
 
 def update_records():
     print "updating..."
@@ -66,7 +71,12 @@ def update_records():
 
 
 if __name__ == "__main__":
-    try:
-        update_records()
-    except Exception:
-        print "No more updates"
+    if len(sys.argv) == 1:
+        mylib.print_console(get_random())
+
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'cron':
+            try:
+                update_records()
+            except Exception:
+                print "No more updates"
