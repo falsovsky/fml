@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from bs4 import BeautifulSoup
-import urllib2, urllib, re, sys, sqlite3, datetime, hashlib, time, os
+import urllib2, re, sqlite3, datetime, time, os, sys
 import mylib
-
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 conn = sqlite3.connect(scriptpath + '/fml.db')
@@ -33,12 +32,12 @@ def update_records():
     lastts = get_latest_record_ts()
     print "lastts: %s" % lastts
 
-    response = urllib2.urlopen('http://www.fmylife.com/?page=0')
+    response = urllib2.urlopen('http://www.fmylife.com')
     html = response.read()
     soup = BeautifulSoup(html)
     lastpage = str(soup.find('ul', 'left').find_all('li')[-1:][0].string)
 
-    total = int(lastpage) - 1
+    total = int(lastpage)
     print "total pages: %s" % total
 
     for page in range(0, int(lastpage)):
@@ -68,7 +67,6 @@ def update_records():
 
         conn.execute('insert into fml (fml_id, dt, msg) values(?, ?, ?)', [id, ts, msg])
         conn.commit()
-
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
