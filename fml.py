@@ -37,16 +37,16 @@ def find_record(find, position = 1):
         mylib.print_console("Not found")
         sys.exit()
     if total > 1 and position < total:
-        mylib.print_console("%d found '.fm %s %d' for the next one" % (total, find, position+1))
+        mylib.print_console("%d found '.ff %s %d' for the next one" % (total, find, position+1))
 
     sql = 'select id, fml_id, datetime(dt, "unixepoch") as data, msg from fml WHERE msg like ? OR fml_id = ? ORDER BY data DESC LIMIT ?,1'
     args = ['%'+find+'%', find.translate(None, '#'), position-1]
     c = conn.execute(sql, args)
     rows = c.fetchall()[0]
     msg = "%s - #%s, %s" % (rows[3], rows[1], rows[2])
-    return msg4
+    return msg
 
-def list_record(position = 1):
+def list_record(position = 1):      
     if position <= 0:
       position = 1
     sql = 'select count(1) from fml'
@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
         elif sys.argv[1] == 'find':
             if len(sys.argv) == 2:
-                mylib.print_console(".fm: find argument required")
+                mylib.print_console(".ff: find argument required")
                 sys.exit()
             try:
                 if (len(sys.argv) > 3):
