@@ -28,7 +28,7 @@ def get_random():
 
 def find_record(find, position = 1):
     if position <= 0:
-      position = 1
+        position = 1
     sql = 'select count(1) from fml where msg like ? OR fml_id = ?'
     args = ['%'+find+'%', find.translate(None, '#')]
     c = conn.execute(sql, args)
@@ -48,7 +48,7 @@ def find_record(find, position = 1):
 
 def list_record(position = 1):      
     if position <= 0:
-      position = 1
+        position = 1
     sql = 'select count(1) from fml'
     c = conn.execute(sql)
     total = c.fetchone()[0]
@@ -66,10 +66,8 @@ def list_record(position = 1):
     return msg
 
 def update_records():
-    print "updating..."
-
     lastts = get_latest_record_ts()
-    print "lastts: %s" % lastts
+    print "last timestamp on db: %s" % lastts
 
     response = urllib2.urlopen('http://www.fmylife.com')
     html = response.read()
@@ -80,7 +78,7 @@ def update_records():
     print "total pages: %s" % total
 
     for page in range(0, int(lastpage)):
-        print page
+        print "scrapping page: %d" % page
 
         response = urllib2.urlopen('http://www.fmylife.com/?page='+ str(page))
         html = response.read()
@@ -126,10 +124,8 @@ if __name__ == "__main__":
         mylib.print_console(get_random())
     if len(sys.argv) > 1:
         if sys.argv[1] == 'cron':
-
             mylib.print_console('Updating...')
             update_records()
-
         elif sys.argv[1] == 'find':
             if len(sys.argv) == 2:
                 mylib.print_console(".ff: find argument required")
