@@ -56,7 +56,7 @@ def list_record(position = 1):
         mylib.print_console("Not found")
         sys.exit()
     if total > 1 and position < total:
-        mylib.print_console("%d found '.fl %d' for the next one" % (total, position+1))
+        mylib.print_console("%d found '.lf %d' for the next one" % (total, position+1))
 
     sql = 'select id, fml_id, datetime(dt, "unixepoch") as data, msg FROM fml ORDER BY data DESC LIMIT ?,1'
     args = [position-1]
