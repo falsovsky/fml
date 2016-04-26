@@ -69,41 +69,41 @@ def update_records():
     lastts = get_latest_record_ts()
     print "last timestamp on db: %s" % lastts
 
-    response = urllib2.urlopen('http://www.fmylife.com')
-    html = response.read()
-    soup = BeautifulSoup(html)
-    lastpage = str(soup.find('ul', 'left').find_all('li')[-1:][0].string)
-
+    lastpage = "9000"
     total = int(lastpage)
-    print "total pages: %s" % total
 
     for page in range(0, int(lastpage)):
         print "scrapping page: %d" % page
 
         response = urllib2.urlopen('http://www.fmylife.com/?page='+ str(page))
         html = response.read()
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, "html.parser")
 
-        for message_block in soup.find_all('div', 'post article'):
-            id = message_block['id']
-            dt_str = str(message_block.find('div', 'right_part').find_all('p')[1])
-            r = re.search(r"On (?P<date>\d+/\d+/\d+) at (?P<time>\d+:\d+(am|pm))", dt_str)
+        if soup.find('div', 'article') is None:
+            print "reached the end??"
+            break
+
+        for article in soup.find_all('div', 'article'):
+            if "is-historical" in article["class"]:
+                continue
+
+            id = article['id']
+            date = article.find('div', 'date').find('p').getText()
+            r = re.search(r"(?P<date>\d+/\d+/\d+) at (?P<time>\d+:\d+[a|p]m)", date)
             dt = datetime.datetime.strptime(r.group('date') + ' ' + r.group('time'), "%m/%d/%Y %I:%M%p")
             ts = str(time.mktime(dt.timetuple()))[:-2]
 
-            msg = ""
+            msg = article.find('p', 'content').find('a').string
+            if msg is None:
+                continue
 
-            for message_line in message_block.find_all('a', 'fmllink'):
-                if message_line.string is not None:
-                    msg = msg + message_line.string.encode('utf-8').strip() + "\n"
+            msg = msg.encode('utf-8').strip()
 
-            msg = msg.strip()
+            if int(ts) <= int(lastts):
+                return
 
-        if int(ts) <= int(lastts):
-            return
-
-        conn.execute('insert into fml (fml_id, dt, msg) values(?, ?, ?)', [id, ts, msg])
-        conn.commit()
+            conn.execute('insert into fml (fml_id, dt, msg) values(?, ?, ?)', [id, ts, msg])
+            conn.commit()
 
 def get_magic_random(s):
     sql = 'select count(1) from fml'
