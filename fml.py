@@ -46,7 +46,7 @@ def find_record(find, position = 1):
     msg = "%s - #%s, %s" % (rows[3], rows[1], rows[2])
     return msg
 
-def list_record(position = 1):      
+def list_record(position = 1):
     if position <= 0:
         position = 1
     sql = 'select count(1) from fml'
@@ -75,7 +75,9 @@ def update_records():
     for page in range(0, int(lastpage)):
         print "scrapping page: %d" % page
 
-        response = urllib2.urlopen('http://www.fmylife.com/?page='+ str(page))
+        opener = urllib2.build_opener()
+        opener.addheaders = [('User-Agent', 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36')]
+        response = opener.open('http://www.fmylife.com/?page='+ str(page))
         html = response.read()
         soup = BeautifulSoup(html, "html.parser")
 
