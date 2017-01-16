@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from bs4 import BeautifulSoup
-import urllib2, re, sqlite3, datetime, time, os, sys, hashlib
+import re, sqlite3, datetime, time, os, sys, hashlib
+if sys.version_info[0] < 3:
+    from urllib2 import build_opener, HTTPError
+else:
+    from urllib.request import build_opener, HTTPError
 import mylib
 
 scriptpath = os.path.dirname(os.path.realpath(__file__))
@@ -67,44 +71,56 @@ def list_record(position = 1):
 
 def update_records():
     lastts = get_latest_record_ts()
-    print "last timestamp on db: %s" % lastts
+    print("last timestamp on db: %s" % lastts)
 
-    lastpage = "9000"
+    lastpage = "3638"
     total = int(lastpage)
 
     for page in range(0, int(lastpage)):
-        print "scrapping page: %d" % page
+        print("scrapping page: %d" % page)
 
-        opener = urllib2.build_opener()
+        opener = build_opener()
         opener.addheaders = [('User-Agent', 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36')]
-        response = opener.open('http://www.fmylife.com/?page='+ str(page))
+        try:
+            response = opener.open('http://www.fmylife.com/?page='+ str(page))
+        except HTTPError as err:
+            if err.code == 500:
+                print("Error 500")
+                continue
+
         html = response.read()
         soup = BeautifulSoup(html, "html.parser")
 
-        if soup.find('div', 'article') is None:
-            print "reached the end??"
+        if soup.find('article', 'col-xs-12') is None:
+            print("reached the end??")
             break
 
-        for article in soup.find_all('div', 'article'):
-            if "is-historical" in article["class"]:
+        for article in soup.find_all('article', 'col-xs-12'):
+            # pub
+            if article.find('div', 'ribbon'):
                 continue
 
-            id = article['id']
-            date = article.find('div', 'date').find('p').getText()
-            r = re.search(r"(?P<date>\d+/\d+/\d+) at (?P<time>\d+:\d+[a|p]m)", date)
-            dt = datetime.datetime.strptime(r.group('date') + ' ' + r.group('time'), "%m/%d/%Y %I:%M%p")
+            # get id
+            link = article.find('a')
+            match = re.search(r"_(\d+)\.html", link['href'])
+            article_id = match.group(1)
+
+            info = article.find('div', 'text-center').getText()
+            r = re.search(r"\w+ (?P<date>\d+ \w+ \d+) (?P<time>\d+:\d+)", info)
+            dt = datetime.datetime.strptime(r.group('date') + ' ' + r.group('time'), "%d %B %Y %H:%M")
             ts = str(time.mktime(dt.timetuple()))[:-2]
 
-            msg = article.find('p', 'content').find('a').string
+            print(lastts, ts)
+
+            msg = article.findAll('a')[1].string
             if msg is None:
                 continue
-
             msg = msg.encode('utf-8').strip()
 
             if int(ts) <= int(lastts):
                 return
 
-            conn.execute('insert into fml (fml_id, dt, msg) values(?, ?, ?)', [id, ts, msg])
+            conn.execute('insert into fml (fml_id, dt, msg) values(?, ?, ?)', [article_id, ts, msg])
             conn.commit()
 
 def get_magic_random(s):
