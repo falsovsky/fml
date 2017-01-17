@@ -110,8 +110,6 @@ def update_records():
             dt = datetime.datetime.strptime(r.group('date') + ' ' + r.group('time'), "%d %B %Y %H:%M")
             ts = str(time.mktime(dt.timetuple()))[:-2]
 
-            print(lastts, ts)
-
             msg = article.findAll('a')[1].string
             if msg is None:
                 continue
