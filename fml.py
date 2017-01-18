@@ -73,10 +73,10 @@ def update_records():
     lastts = get_latest_record_ts()
     print("last timestamp on db: %s" % lastts)
 
-    lastpage = "3638"
+    lastpage = "3645"
     total = int(lastpage)
 
-    for page in range(0, int(lastpage)):
+    for page in range(1, int(lastpage)):
         print("scrapping page: %d" % page)
 
         opener = build_opener()
@@ -115,11 +115,15 @@ def update_records():
                 continue
             msg = msg.encode('utf-8').strip()
 
-            if int(ts) <= int(lastts):
+            if int(ts) < int(lastts):
                 return
 
-            conn.execute('insert into fml (fml_id, dt, msg) values(?, ?, ?)', [article_id, ts, msg])
-            conn.commit()
+            try:
+                conn.execute('insert into fml (fml_id, dt, msg) values(?, ?, ?)', [article_id, ts, msg])
+            except sqlite3.IntegrityError:
+                print("Skipping already on DB")
+                pass
+        conn.commit()
 
 def get_magic_random(s):
     sql = 'select count(1) from fml'
