@@ -62,7 +62,7 @@ def list_record(position = 1):
     if total > 1 and position < total:
         mylib.print_console("%d found '.lf %d' for the next one" % (total, position+1))
 
-    sql = 'select id, fml_id, datetime(dt, "unixepoch") as data, msg FROM fml ORDER BY data DESC LIMIT ?,1'
+    sql = 'select id, fml_id, datetime(dt, "unixepoch") as data, msg FROM fml ORDER BY id ASC LIMIT ?,1'
     args = [position-1]
     c = conn.execute(sql, args)
     rows = c.fetchall()[0]
